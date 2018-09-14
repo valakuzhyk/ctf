@@ -1,0 +1,14 @@
+* narnia0 -> narnia1
+  While it seemed easy in the beginning, my lack of understanding of the
+details was my downfall. I saw that there was a buffer overflow immediately,
+got the code to execute as expected, but was completely unaware of how to pass
+all of the desired code to the program in a single string. Even after that
+simple part, I didn't notice that a terminal had popped up, and even more, was
+unable to keep the terminal after it opened, and even after I had seen the
+solution, I was not able to tell why it worked. However, now I know to be
+careful with which statements I put semicolons after since that ends the
+command right there. 
+  pass=efeidiedae
+* narnia1 -> narnia2
+  Seems like this next one will be hard as well, oh well.
+

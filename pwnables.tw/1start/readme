@@ -1,0 +1,58 @@
+To solve, we run the python script. This was just copied from another person's
+writeup. Yeah, not amazing or anything, but we gotta start somewhere.
+
+This is the beginning of the journey. I've always wanted to write something like this, and I've always wanted to do something like this, and now I can finally do both! And not feel like a tool. That's the real difference here. The real downside to this is I'm not good enough to do anything cool, but I'm not so bad as to think what I'm doing is cool. At least I think that. It's more embarrassing. Anyways.
+
+Assignment 1: Start
+*Analysis* 
+First thing I do is run the program. then I chmod and rerun. 
+
+Let's start the CTF:
+
+Okay, that's a good start.
+I enter in some gibberish, and nothing happens.
+
+okay, I move on. The next, and only, tool in my tool belt is IDA. I pretty good tool to be honest. I take a look at the disassembly and it seems like there is some string that is being pushed on the stack. I run strings and I see some jumbled mess. I figure it has to do with the order the bits are written in, but I don't really understand at the moment. Though As I read this I realize that h is a delimiter and the rest makes sense.
+
+Now I know that this is a syswrite, putting it on the screen, while this sysread is given a mighty vulnerable look. Overflow style.
+
+However, I don't know what I want to overflow with at first. Clearly, I want to overwrite the return value which is on the stack. This will require writing the exact address into this space.
+
+We can now use nasm to write some assembly code, which we can read in as input into the binary.
+
+first, let's get the right number of nops that will cause a crash!
+I check that "nop" compiles to the right thing with nasm. It does! Huzzah!
+
+However my first mistake is "echo exploit" please... have patience with me.
+So to get the file I am writing into start, I am going to use "nasm exploit; cat exploit | ./start"
+
+Now I get what I want! I get a segfault when putting 21 nops,but not 20!
+
+I write "dd 0x0804809D" into the last line, and I have managed to get control of the return address!!!!! My first exploit :D :D :D. Ok, now for the payload.
+
+*Payload*
+
+I have tried multiple times to put the return address as the next address on the stack, and then write some code in that space, but I keep getting segmentation faults.
+
+- Day 2
+
+I am now trying to get the debugger to work. I want to see why setting the return address to the stack is still causing the program to crash. I should be able to see its execution. Trying to get ida to run on this debug server.
+
+Now, I got the debugger to work! I had to bring up a linux server that came with ida to run the process on. However, while running the process, I noticde that the stack is not in the same location each time.......
+
+- Day 3
+I just got my new machine to work, so now I can consistently have a workstation dedicatd to this kind of stuff! overkill yeah. Anyways, back to work.
+
+So apparently, the stack is not in the same location, in fact it is always in a different location. Go figure. Anyways, I did some reading and it seems like this is why those nop sleds are useful, as you increase your chance that your code will execute as expected.
+
+...
+
+So for this one, I just looked up the answer. It was all in the dumping the hex address of the stack. Once you have that address, you can just send some shellcode, and you got it.
+
+So what I learned
+
+- Learn how to use python pwntools. It is awesome for these ctf like
+  challenges.
+- The code to pull up a shell is commonly just thrown in.
+- One strategy is just to dump the stack address, then try and execute from
+  there.

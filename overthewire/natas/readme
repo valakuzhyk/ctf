@@ -1,0 +1,268 @@
+Here is the second adventure!
+
+Skills that have been learned
+- Modifying request headers and cookies (pretending to be someone else) using
+  postman
+- Go through the filepath to identify where you are (robots.txt woman)
+- Quick manipulation of strings using https://gchq.github.io/CyberChef
+
+
+Natas, a beginners dive into serverside web-security.
+
+Level 0 -> level 1
+  Look at the page source
+Level 1 -> level 2
+  Look at the page source...
+  pass = ZluruAthQk7Q2MqmDeTiUij2ZvWy2mBi
+Level 2 -> level 3
+  There is a pixel being referenced by its path. /files/pixel.png
+  I imagine there is something else in that path, user enough its users.txt
+  Following that, we get the pass!
+Level 3 -> level 4
+  So here they give a hint that not even google will be able to find this...
+the dreaded robots.txt!!!! Well, at least i got it this time XD
+  pass = Z9tkRkWmpt9Qr7XrR5jWRkgOU901swEZ
+level 4 -> level 5
+  This is saying I am only allowed to come from a certain webpage...
+  I should be able to fake where I come from.
+  Using postman and postman interceptor, I am able to set the "referer" header
+  to be able to send a request as another website.
+  pass = iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq
+level 5 -> level 6
+  It tells me that I'm not logged in. I am checking the request that is sent,
+  and I notice that one of the cookies is "loggedin=0"
+  time to edit some cookies. Seems like I need to get the postman app rather
+  than the extension.
+  pass = aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1
+level 6 -> level 7
+  This level had an input box asking for a secret and a link to some code. In
+  the code, the input was being compare to a secret whose location was given.
+  So I went to the location and picked it up 
+level 7 -> level 8
+  There was an http argument, which is really called a "query string". This is
+  where it has a variable with its value followed by a ?. This one was asking
+  for a page, so I gave it the location of the password file.
+  pass = DBfUBfqQG69KvJvJ1iAbMoIpwSNQ9bWe
+level 8 -> level 9
+  Simple base64 decode
+  pass = W0mMhUcRRnG8dcghE4qvk3JA9lGt8nDl
+level 9 -> level 10
+  There is a script saying "grep -i input sometxtfile.txt" just cut the command
+  off with a semicolon
+level 10 -> level 11
+  Now they are checking for semicolon and ampersand. What to do?
+  So I just passed the password file as an additional parameter, and just
+  searched for "." in the file.
+  pass = U82q5TCMMQ9xuFoI3dYX61s7OZD9JKoK
+level 11 -> level 12
+  This base 64 decoded, then xored, then read json of a key value and a color
+  that I had control over. I didn't know how the json was structured, so
+  I debase64ed it, and exored to versions with different colors to find the diff
+  part, then I could xor that with what the color was to get the key. After that
+  , I just changed the value in the string and reversed the "encryption" to set 
+  the cookie the appropriate way.
+  pass = EDXp0pS26wLKHZy1rDBPUZk0RKfLGIR3
+* level 12 -> level 13
+  Here we are allowed to upload a file. The file always goes into the "upload"
+directory, however, we can control the extension by editing one of the post
+request parameters. By editing the extension, we could write a file that has
+the privilege of the website. I used this to write a php file that read the
+password file and returned the value. Ahhhh, how sweet :)
+  pass = jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY
+* level 13 -> level 14
+  Here they do some checks on whether the file starts with a magic number.
+However, it seems like this doesn't matter, since php will ignore that
+beginning number, and just start executing when it sees the opening of the
+angle brackets. I used ghex to edit the file to give it the right magic number.
+Something different that I did this time, was that I used shell_exec to execute
+a command that I passed as an html query string, which gave me more flexibility
+than hard coding a read from a file.
+  pass = Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
+* level 14 -> level 15
+  I can immediately see a sql query, so at this level it has to be a straight
+forward sql injection. It even has a debug parameter that I can use. But why do
+things by hand, when sqlmap can do everything for you. They had a nice little
+easter egg in there. anyways, pretty easy.
+  pass = AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J
+* level 15 -> level 16
+  Before, there was a username and password which you could fake to get in.
+Now, there is just a boolean response of whether the username is there or not.
+However, this is one that I implemented by hand, so I know that its possible :)
+Seems like another sqlmap application
+  pass = WaIHEacj63wnNIBROHeqi3p9t0m5nhmh
+* level 16 -> level 17
+  Here is another input allowing page, where there is validation being done,
+however its pretty good validation. It is also quoting the string that you are
+passing, so I'm not immediately sure how to get it to execute something
+malicious
+  After some investigating, I realized that I can get some commands to execute
+by using the dollar sign. I tried to get it to extract the first letter from
+the password file, and grep using that, but I don't think it worked, since all
+the characters were returned. I also tried to overwrite the dictionary file
+with the password file, but that didn't do anything either.
+  So i got it to work using tail, to identify words in the dictionary from the
+end of the string. However, I still don't know how I would be able to get
+intermediate parts, and how I would be able to tell the case of the letter.
+There should be a way doing a SQLMAP like thing where you do a match of the
+string, and change the output to communicate whether you are getting closer to
+the right answer, however this seems like overkill. I don't know whether there
+is a tool that can do this kinda work for me.
+Either way, I created a couple strings that could do the work for me
+
+$(expr substr abcdefghijklmnopqrstuvwxyz $(expr index $(cat
+/etc/natas_webpass/natas17) b) 1) allows me to find the first location of
+a string (overkill yeah, I could have just gone index by index, which I did do
+as well, but then I could test case and numerals, since the search was case
+insensitive.
+  pass = 8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw
+* level 17 -> level 18
+  Another sql question. Time to break out sqlmap! interestingly enough, this
+uses a "time based blind" sql injection attack. This requires identifying
+information from the time it takes for the response to come back. I'm assuming
+this is because you can't communicate anything from the rows that are returned.
+Anyways
+  pass = xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP
+* level 18 -> level 19
+  This is another "login" level. Here, there is a session id, with some data
+corresponding to whether I am admin. I am able to edit my session id, but if
+I make an invalid one, or the key doesn't exist, it is reassigned (a new one is
+created). I want a new key assigned, because I can become "admin" by sending
+"admin" as the username. However, for some reason...
+And I realize now that the line was commented out. There is no place that the
+session is set anymore. So now the question is, is there anyways to set values
+in the session. 
+So it seems the real way to solve this was to try all of the potential session
+ids, since one of them (presumably) was the original admin sessid, which one
+can guess after reading the comments of the code. TO be honest, one should
+always test the session ids, just to make sure that none of them have useful
+data present in the local session store.
+I automated this by writing a curl command and iterating over all the possible
+sessid values, stopping when I find a string only present in the response
+I want.
+
+  1 toFind="You are an"
+  2 
+  3 for i in `seq 1 640`;
+  4 do
+  5  a=`curl -v -u natas18:xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP --cookie \
+  6    "PHPSESSID=$i" --form "username=admin;password=admin" \
+  7    http://natas18.natas.labs.overthewire.org?debug=1`
+  8  if [[ $a == *$toFind* ]];
+  9  then
+ 10    echo "$a"
+ 11    exit 0
+ 12  fi
+ 13 done
+
+  pass = 4IwIrekcuZlA9OsjOkoUtwU6lhokCPYs
+* level 19 -> level 20
+  This level starts out saying that it is similar to the previous level. You
+look at the session id, and its some long hex. I made multiple requests, and
+compared the ids and they looked like the bytes were changing to the same hex
+values.
+
+38372d61646d696e
+3436392d61646d696e
+3530392d61646d696e
+3436322d61646d696e
+3236392d61646d696e
+
+so I went ahead and tried to decode them and lo and behold... they were of the
+form ___-admin, where ___ was a three digit number... same as last time. Just
+reused the script, but I was able to use `pwn hex` from pwntools to output the
+hex for the ascii representation of the session id
+  pass = eofm3Wsshxc5bwtVnEuGIlr7ivb9KABF
+* level 20 -> level 21
+ Here, we want to get into function print_credentials, with a session that has
+admin = 1, however admin is never set, so we probably need to identify the
+method that sessions are assigned
+ First thing to notice is the "session_set_save_handler". They are defined here
+in the code. So it seems like the only control I have is the name I am saving
+and the session id.
+  The key to this one was noticing the flaw in the way data was saved in the
+session, and then read out. The way each new piece of data was identified was
+through splitting on new lines. Since the name was saved, I could place
+newlines in my name, causing the program to think these were extra pieces of
+data. So after adding %0Aadmin 1%0A I was able to get admin=1, and then I got
+the password!
+  pass = IFekPyrQXftziDEsUr3x21sYuahypdgJ
+* level 21 -> level 22
+  This level was similar, however there were two websites that were colocated.
+I imagine that this means that the sessions in one were visible from the other.
+It saved values from a form, but validated the forms output. So I just
+constructed a query that passed the parameters directly as query strings, and
+then set admin=1. After this, I took note of the session cookie, and then
+crafted a request to the original website with this phpsessid to load the
+admin=1 that I had set earlier. Something to keep in mind though, I failed to
+set the cookie in curl because I forgot to set the cookie flag, I just passed
+the cookie string... like a dummy...
+  pass = chG9fbe1Tq2eWVMgjYYD1MsfIvN461kJ
+* level 22 -> level 23
+  This one looks simple. There is an array key that needs to exist for me to
+get the credentials, revelio. However, there is a check at the beginning of the
+file for that exact string, and it ensures that you have an admin session. If
+you don't, it redirects you using the "header" php function. I could get past
+this by:
+  - Somehow ignoring the first part
+  - Including the query string even in the redirect
+  - Having the session include the admin string.
+So some looking online showed that not every browser supports the "header"
+redirect. So I tried using curl, and lo and behold, I got a redirect, but
+I still got the original page! Look at that. So 
+  pass = D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
+* level 23 -> level 24
+  This one was super easy. It just asked for you to enter a passwd that
+contained the string "iloveyou", and the string > 10. In php, apparently :P, it
+compares the first numeric pattern it retrieves from the string. so 20iloveyou
+works. Not bad.
+  pass = OsRmXFguozKpTZZ5X14zNO43379LZveg
+* level 24 -> level 25
+  This one is a bit harder. it takes a password, and then does
+!strcmp(mystring, "whatever this string is"). So now, there are two ways to
+beat this one, that I can see
+   - Get strcmp() to return 0
+   - Get !strcmp() to return 1
+  Go figure, there are other people who have already written about this.
+Apparently another way to get strcmp to give 0 is if you pass it an array. This
+can be done by including [] in the query string name like
+  ?passwd[]=iloveyou
+  Go figure!
+  pass = GHF6X7YwACaYYssHVY05cFq83hRktl4c
+* level 25 -> level 26
+  this page reads a file from the webpage based on a drop down menu. However,
+it does try to validate the path that is provided. THis is done by string
+comparison though, so I don't know whether this will be resilient to HTML
+encoding.
+Passing the encode characters for "en" worked however passing characters for
+the ../ did not work when including the final string. I did get an error when
+passing that in though
+  http://natas25.natas.labs.overthewire.org/?lang=%2E%2E%2F
+  Warning: include(/var/www/natas/natas25/language): failed to open stream: No
+  such file or directory in /var/www/natas/natas25/index.php on line 38
+However this is the same error as nothing being passed... d'oh. So clearly this
+is being identified. This makes sense, as the server should not have to deal
+with the encoded variables, this is just something to ensure that the data gets
+sent in a predictable way. So how can we get through this
+  - Somehow go backwards a directory without ../
+  - Go to the root directory since we know that path (however its prepended
+    with language)
+Those are the only two ways I see so far.
+However, I missed a simple way. You just need to let it replace the string, and
+have what you are left with be the right string... If i do .../...//, it only
+does one pass of replacement, not replacing the string that is generated by the
+replacement.
+So now that .../...//.../...//.../...//.../...//.../...//etc/natas_webpass
+gets us to the right place, how do we get past the fact that any string that
+contains "natas_webpass" will get caught, and exit will be called...
+One detail is that it is case sensitive. However, linux is too, not sure if
+that would help.
+Another detail is that we are checking the boolean value of a string, but it
+seems like this string will never be empty if there is a string returned.
+  - It could not be this path, maybe something to do with the logs.
+  - There could be a string that doesn't match "natas_webpass", but still
+    manages to get it when the string is passed to include
+  - We could be including a file that is not in natas_webpass
+  - We could match natas_webpass but perahps the input would evaluate to false?
+
+I'm stumped. I'll come back to this in the future then.
+
